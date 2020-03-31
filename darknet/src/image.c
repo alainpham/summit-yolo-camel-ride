@@ -242,10 +242,17 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
     int i,j;
     
     int nbPeople=0;
-    char nbPeopleStr[12];
+    int objectCounts[classes];
+
+    for(j = 0; j < classes; ++j){
+        objectCounts[j]=0;
+    }
+
+    char outputres[4096] = {0};
 
     for(i = 0; i < num; ++i){
         char labelstr[4096] = {0};
+        
         int class = -1;
         for(j = 0; j < classes; ++j){
             if (dets[i].prob[j] > thresh){
@@ -255,38 +262,17 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
                 } else {
                     strcat(labelstr, ", ");
                     strcat(labelstr, names[j]);
+                    
                 }
-                
+
                 if (strcmp ("person", names[j])==0){
                     nbPeople++;
                 };
+                objectCounts[j]++;
 
-                printf("Detected %s: %.0f%%\n", names[j], dets[i].prob[j]*100);
+                printf("Detected %s: %.0f%%\n",names[j], dets[i].prob[j]*100);
             }
         }
-
-    //added code 
-    CURL *curl;
-    CURLcode res;
-
-    curl = curl_easy_init();
-    if(curl) {
-
-        curl_easy_setopt(curl, CURLOPT_URL, "http://127.0.0.1:8080/event");
-        sprintf(nbPeopleStr, "%d", nbPeople);
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS,nbPeopleStr);
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(nbPeopleStr));
-        res = curl_easy_perform(curl);
-
-        /* Check for errors */ 
-        if(res != CURLE_OK)
-        fprintf(stderr, "curl_easy_perform() failed: %s\n",
-                curl_easy_strerror(res));
-    
-        /* always cleanup */ 
-        curl_easy_cleanup(curl);
-    }
-    //end of added code
 
         if(class >= 0){
             int width = im.h * .006;
@@ -340,6 +326,38 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
             }
         }
     }
+
+
+    char buffer[33];
+    for(j = 0; j < classes; ++j){
+        if (objectCounts[j]>0){
+        strcat(outputres, names[j]);
+        sprintf(buffer, ":%d,",objectCounts[j]);
+        strcat(outputres,buffer);
+        }
+    }
+
+    //added code 
+    CURL *curl;
+    CURLcode res;
+
+    curl = curl_easy_init();
+    if(curl) {
+
+        curl_easy_setopt(curl, CURLOPT_URL, "http://127.0.0.1:8080/event");
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDS,outputres);
+        curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long)strlen(outputres));
+        res = curl_easy_perform(curl);
+
+        /* Check for errors */ 
+        if(res != CURLE_OK)
+        fprintf(stderr, "curl_easy_perform() failed: %s\n",
+                curl_easy_strerror(res));
+    
+        /* always cleanup */ 
+        curl_easy_cleanup(curl);
+    }
+    //end of added code
 }
 
 void transpose_image(image im)

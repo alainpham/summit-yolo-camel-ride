@@ -1,0 +1,30 @@
+<routes>
+	<route>
+	    <from uri="kafka:events?brokers=localhost:9092&amp;groupId=camel-consumers"/>
+	    <unmarshal>
+		<json library="Jackson"/>
+	    </unmarshal>
+	    <filter>
+		<simple>${body.containsKey('person')}</simple>
+		<log message="${body}"></log>
+		<setProperty name="nbPeople">
+		    <simple>${body[person]}</simple>
+		</setProperty>
+		<choice>
+		    <when>
+		        <simple>${exchangeProperty.nbPeople} > 4</simple>
+		        <log message="CHUCK NORRIS MUST BRING SNACKS FOR EVERYONE"/>
+		        <aggregate completionSize="20" completionInterval="4000"  strategyRef="agg">
+		            <correlationExpression>
+		                <constant>all</constant>
+		            </correlationExpression> 
+		            <setBody>
+		                <simple>Ok I'm Bringing snacks for ${body[person]} people. Chuck !</simple>
+		            </setBody>
+		            <to uri="telegram:bots?authorizationToken=975040368:AAFaddQ0S8Gmclw499q99UeJE35BdeBglR8&amp;chatId=157105479"/>
+		        </aggregate>
+		    </when>
+		</choice>
+	    </filter>
+	</route>
+<routes>

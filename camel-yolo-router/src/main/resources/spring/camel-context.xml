@@ -33,7 +33,7 @@
                                 <constant>all</constant>
                             </correlationExpression> 
                             <setBody>
-                                <simple>Ok I'm Bringing snacks for ${body[person]} people</simple>
+                                <simple>Ok I'm Bringing snacks for ${body[person]} people. Chuck !</simple>
                             </setBody>
                             <to uri="telegram:bots?authorizationToken=975040368:AAFaddQ0S8Gmclw499q99UeJE35BdeBglR8&amp;chatId=157105479"/>
                         </aggregate>

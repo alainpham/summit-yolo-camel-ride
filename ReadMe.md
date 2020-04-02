@@ -44,3 +44,15 @@ dnf install openssl-devel
 
 
 
+# Startup
+
+cd /home/apham/apps/kafka_2.13-2.4.1
+bin/zookeeper-server-start.sh config/zookeeper.properties
+bin/kafka-server-start.sh config/server.properties
+
+
+
+
+
+
+

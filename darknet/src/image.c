@@ -329,13 +329,19 @@ void draw_detections(image im, detection *dets, int num, float thresh, char **na
 
 
     char buffer[33];
+    strcat(outputres,"{");
     for(j = 0; j < classes; ++j){
         if (objectCounts[j]>0){
-        strcat(outputres, names[j]);
-        sprintf(buffer, ":%d,",objectCounts[j]);
-        strcat(outputres,buffer);
+            strcat(outputres,"\"");
+            strcat(outputres, names[j]);
+            strcat(outputres,"\"");
+            sprintf(buffer, ":%d,",objectCounts[j]);
+            strcat(outputres,buffer);
         }
     }
+    if (outputres[strlen(outputres)-1] == ',')
+        outputres[strlen(outputres)-1] = 0;
+    strcat(outputres,"}");
 
     //added code 
     CURL *curl;
